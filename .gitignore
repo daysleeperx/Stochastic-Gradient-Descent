@@ -95,10 +95,12 @@ venv.bak/
 .spyproject
 
 # Rope project settings
-.ropeproject
+.ropeprojec
 
 # mkdocs documentation
 /site
 
 # mypy
 .mypy_cache/
+
+.idea/
