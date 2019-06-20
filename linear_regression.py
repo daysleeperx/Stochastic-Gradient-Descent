@@ -22,6 +22,8 @@ class LinearRegression:
         self._train = train
         self._learning_rate = learning_rate
 
+        self._weights = self.random_weights(train.shape[1])
+
     @property
     def train(self):
         return self._train
@@ -38,6 +40,10 @@ class LinearRegression:
     def learning_rate(self, value):
         self._learning_rate = value
 
+    @staticmethod
+    def random_weights(length: int):
+        return np.random.uniform(low=0, high=1, size=length)
+
     @classmethod
     def from_csv(cls, file_path):
         """Generate model from csv file."""
@@ -45,9 +51,47 @@ class LinearRegression:
 
         return cls(train)
 
+    def predict(self, train_x):
+        """
+        Return prediction using current weights.
+
+        :param train_x:
+        :return:
+        """
+        return np.dot(train_x, self._weights)
+
+    def loss_sse(self, train_x, expected):
+        """
+        Return cost using the SSE(Sum of Squared Errors) equation.
+
+        :param train_x: sample row(s) of x values
+        :param expected: actual values of y
+        :return: cost as int
+        """
+        predictions = self.predict(train_x)
+        return np.sum(np.square(predictions - expected))
+
+    def fit_sgd(self, epochs=100, cost=0.0):
+        """
+        Stochastic Gradient Descent - randomly select a sample to evaluate gradient,
+        make step towards minimizing the loss function.
+
+        :param epochs: number of training epochs
+        :param cost: initial cost value
+        :return: updated weights
+        """
+        cost_history = np.zeros(epochs)
+        m = self.train.shape[0]
+
+        for epoch in range(epochs):
+            for i in range(m):
+                rand_ind = np.random.randint(0, m)
+                # TODO:
+                pass
+
 
 if __name__ == '__main__':
     lr = LinearRegression.from_csv('data/test.csv')
     print(lr.train.shape)
 
-
+    np.random.randn()
