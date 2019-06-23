@@ -75,33 +75,32 @@ class LinearRegression:
         """
         Return prediction using current weights.
 
-        :param x: test data
+        :param x: test data as numpy array
         :return: predictions as int
         """
         return np.dot(x, self._weights)
 
-    def loss_sse(self, x, expected):
+    def loss_sse(self, x, y):
         """
         Return cost using the SSE(Sum of Squared Errors) equation.
 
-        :param x: sample row(s) of x values
-        :param expected: actual values of y
+        :param x: train data as numpy array
+        :param y: labels as numpy array
         :return: cost as int
         """
         predictions = self.predict(x)
-        return np.sum(np.square(predictions - expected))
+        return np.sum(np.square(predictions - y))
 
     def fit_sgd(self, epochs=10):
         """
         Stochastic Gradient Descent - randomly select a sample to evaluate gradient,
         make step towards minimizing the loss function.
 
-        :param x: test data
-        :param y: test labels
         :param epochs: number of training epochs
         :return: updated weights
         """
         cost_history = np.zeros(epochs)
+        weights_history = np.zeros((epochs, len(self._weights)))
         m = len(self._x)
 
         for epoch in range(epochs):
@@ -116,7 +115,7 @@ class LinearRegression:
                 cost += self.loss_sse(sample, label)
             cost_history[epoch] = cost
 
-        return self._weights, cost_history
+        return self._weights, cost_history, weights_history
 
     def __update_weights(self, error, sample):
         self._weights += sample * self._learning_rate * error
@@ -128,8 +127,8 @@ class LinearRegression:
 
         (true positive + true negative) divided by total number of examples
 
-        :param x: test data
-        :param y: labels
+        :param x: test data as numpy array
+        :param y: labels as numpy array
         :param threshold:
         :return: accuracy as int
         """
