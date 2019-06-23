@@ -1,36 +1,45 @@
 """Linear Regression Model."""
 
 
-import numpy as np
+from util import *
 
 
 class LinearRegression:
     """
     Represent multivariate linear regression,
     where multiple correlated dependent variables are predicted,
-    rather than a single scalar variable
+    rather than a single scalar variable.
     """
 
-    def __init__(self, train, learning_rate=0.01):
+    def __init__(self, x, y, learning_rate=0.01):
         """
         Class constructor.
 
-        :param train: initial training set
+        :param x: training set as numpy array
+        :param y: labels as numpy array
         :param learning_rate: learning rate, which determines
         to what extent newly acquired information overrides old information
         """
-        self._train = train
+        self._x = x
+        self._y = y
         self._learning_rate = learning_rate
-
-        self._weights = self.random_weights(train.shape[1])
+        self._weights = self.random_weights(x.shape[1])
 
     @property
-    def train(self):
-        return self._train
+    def x(self):
+        return self._x
 
-    @train.setter
-    def train(self, value):
-        self._train = value
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
 
     @property
     def learning_rate(self):
@@ -41,57 +50,89 @@ class LinearRegression:
         self._learning_rate = value
 
     @staticmethod
-    def random_weights(length: int):
-        return np.random.uniform(low=0, high=1, size=length)
+    def random_weights(size):
+        return np.random.randn(size)
 
     @classmethod
-    def from_csv(cls, file_path):
-        """Generate model from csv file."""
+    def from_csv(cls, file_path) -> 'LinearRegression':
+        """
+        Generate model from csv file.
+
+        This method assumes, that the last column of training data array
+        represents the labels.
+
+        :param file_path: str
+        :return: model as LinearRegression object
+        """
         train = np.loadtxt(file_path, delimiter=",")
 
-        return cls(train)
+        x = add_one_bias(normalize(train[:, :-1]))
+        y = normalize(train[:, -1])
 
-    def predict(self, train_x):
+        return cls(x, y)
+
+    def predict(self, x):
         """
         Return prediction using current weights.
 
-        :param train_x:
-        :return:
+        :param x: test data
+        :return: predictions as int
         """
-        return np.dot(train_x, self._weights)
+        return np.dot(x, self._weights)
 
-    def loss_sse(self, train_x, expected):
+    def loss_sse(self, x, expected):
         """
         Return cost using the SSE(Sum of Squared Errors) equation.
 
-        :param train_x: sample row(s) of x values
+        :param x: sample row(s) of x values
         :param expected: actual values of y
         :return: cost as int
         """
-        predictions = self.predict(train_x)
+        predictions = self.predict(x)
         return np.sum(np.square(predictions - expected))
 
-    def fit_sgd(self, epochs=100, cost=0.0):
+    def fit_sgd(self, epochs=10):
         """
         Stochastic Gradient Descent - randomly select a sample to evaluate gradient,
         make step towards minimizing the loss function.
 
+        :param x: test data
+        :param y: test labels
         :param epochs: number of training epochs
-        :param cost: initial cost value
         :return: updated weights
         """
         cost_history = np.zeros(epochs)
-        m = self.train.shape[0]
+        m = len(self._x)
 
         for epoch in range(epochs):
+            cost = 0
             for i in range(m):
-                rand_ind = np.random.randint(0, m)
-                # TODO:
-                pass
+                rand_idx = random_int(m)
+                sample, label = self._x[rand_idx], self._y[rand_idx]
 
+                prediction = self.predict(sample)
 
-if __name__ == '__main__':
-    lr = LinearRegression.from_csv('data/test.csv')
-    print(lr.train.shape)
+                self.__update_weights(label - prediction, sample)
+                cost += self.loss_sse(sample, label)
+            cost_history[epoch] = cost
 
-    np.random.randn()
+        return self._weights, cost_history
+
+    def __update_weights(self, error, sample):
+        self._weights += sample * self._learning_rate * error
+
+    def evaluate(self, x, y, threshold=0.5):
+        """
+        Return accuracy of model for binary classification, where
+        accuracy is calculated as follows:
+
+        (true positive + true negative) divided by total number of examples
+
+        :param x: test data
+        :param y: labels
+        :param threshold:
+        :return: accuracy as int
+        """
+        predictions = (self.predict(x) > threshold).astype(int)
+        correct_predictions = (predictions == y).astype(int).sum()
+        return correct_predictions / y.shape[0]
