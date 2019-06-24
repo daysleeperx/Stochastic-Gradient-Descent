@@ -2,6 +2,7 @@
 
 
 from util import *
+import matplotlib.pyplot as plt
 
 
 class LinearRegression:
@@ -100,7 +101,6 @@ class LinearRegression:
         :return: updated weights
         """
         cost_history = np.zeros(epochs)
-        weights_history = np.zeros((epochs, len(self._weights)))
         m = len(self._x)
 
         for epoch in range(epochs):
@@ -115,7 +115,7 @@ class LinearRegression:
                 cost += self.loss_sse(sample, label)
             cost_history[epoch] = cost
 
-        return self._weights, cost_history, weights_history
+        return self._weights, cost_history
 
     def __update_weights(self, error, sample):
         self._weights += sample * self._learning_rate * error
@@ -135,3 +135,15 @@ class LinearRegression:
         predictions = (self.predict(x) > threshold).astype(int)
         correct_predictions = (predictions == y).astype(int).sum()
         return correct_predictions / y.shape[0]
+
+    @staticmethod
+    def plot_loss(cost_history):
+        x = np.arange(0, cost_history.shape[0])
+        y = cost_history
+
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss function')
+
+        plt.scatter(x, y, c='b', marker='o')
+        plt.show()
+

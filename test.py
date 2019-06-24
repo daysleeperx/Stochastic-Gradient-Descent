@@ -15,9 +15,10 @@ class LinearModelTest(unittest.TestCase):
     def setUp(self):
         # create and train the model
         self.model = LinearRegression.from_csv(TRAIN_CSV)
-        self.weights, self.cost_history, self.weights_history = self.model.fit_sgd(epochs=5)
+        self.weights, self.cost_history = self.model.fit_sgd(epochs=5)
 
-        test = np.loadtxt('%s' % TEST_CSV, delimiter=",")
+        # import test data
+        test = np.loadtxt(TEST_CSV, delimiter=",")
         self.x_test = add_one_bias(normalize(test[:, :5]))
         self.y_test = normalize(test[:, 5])
 
@@ -30,7 +31,7 @@ class LinearModelTest(unittest.TestCase):
         print('\n'.join(f"Epoch {i} => loss: {j}" for i, j in enumerate(self.cost_history)))
 
     def test(self):
-        self.print_loss()
+        self.model.plot_loss(self.cost_history)
 
         # evaluate against test data
         print(f"Model accuracy: {self.model.evaluate(self.x_test, self.y_test)}")
