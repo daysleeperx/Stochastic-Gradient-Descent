@@ -8,7 +8,7 @@ Accurate occupancy detection of an office room from light, temperature, humidity
 
 ## Attribute Information:
 
-```python
+```
 1. date time year-month-day hour:minute:second
 2. Temperature, in Celsius
 3. Relative Humidity, %
